@@ -2,5 +2,7 @@ mod calc;
 mod repl;
 
 fn main() {
-    repl::run();
+    if let Err(e) = repl::run() {
+        eprintln!("Fatal error: {}", e);
+    }
 }

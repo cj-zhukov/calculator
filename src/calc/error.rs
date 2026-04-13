@@ -1,7 +1,16 @@
-#[derive(Debug, PartialEq)]
+use thiserror::Error;
+
+#[derive(Debug, Error, PartialEq)]
 pub enum CalcError {
+    #[error("invalid token: {0}")]
     BadToken(char),
+
+    #[error("mismatched parentheses")]
     MismatchedParens,
+
+    #[error("not enough operands")]
     NotEnoughOperands,
+
+    #[error("division by zero")]
     DivisionByZero,
 }

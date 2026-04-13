@@ -1,18 +1,32 @@
 use std::io::{self, Write};
 
-pub fn run() {
+use thiserror::Error;
+
+use crate::calc::{error::CalcError, evaluate};
+
+#[derive(Debug, Error)]
+pub enum AppError {
+    #[error(transparent)]
+    Calc(#[from] CalcError),
+
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+}
+
+pub fn run() -> Result<(), AppError> {
     println!("calculator");
 
     loop {
         print!(">> ");
-        io::stdout().flush().unwrap();
+        io::stdout().flush()?;
 
         let mut input = String::new();
-        if io::stdin().read_line(&mut input).unwrap() == 0 {
+        if io::stdin().read_line(&mut input)? == 0 {
             break;
         }
 
         let input = input.trim();
+
         if input == "exit" {
             break;
         }
@@ -21,9 +35,11 @@ pub fn run() {
             continue;
         }
 
-        match crate::calc::evaluate(input) {
-            Ok(res) => println!("{}", res),
-            Err(e) => println!("Error: {:?}", e),
+        match evaluate(input) {
+            Ok(res) => println!("= {}", res),
+            Err(e) => eprintln!("Error: {}", e),
         }
     }
+
+    Ok(())
 }
