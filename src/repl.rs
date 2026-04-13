@@ -1,0 +1,29 @@
+use std::io::{self, Write};
+
+pub fn run() {
+    println!("calculator");
+
+    loop {
+        print!(">> ");
+        io::stdout().flush().unwrap();
+
+        let mut input = String::new();
+        if io::stdin().read_line(&mut input).unwrap() == 0 {
+            break;
+        }
+
+        let input = input.trim();
+        if input == "exit" {
+            break;
+        }
+
+        if input.is_empty() {
+            continue;
+        }
+
+        match crate::calc::evaluate(input) {
+            Ok(res) => println!("{}", res),
+            Err(e) => println!("Error: {:?}", e),
+        }
+    }
+}
