@@ -3,20 +3,20 @@ pub enum Operator {
     Add,
     Sub,
     Mul,
-    Div
+    Div,
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Token {
     Number(u32),
     Op(Operator),
-    Bracket(char)
+    Bracket(char),
 }
 
 #[derive(Debug)]
 pub enum Error {
     BadToken(char),
-    MismatchedParens
+    MismatchedParens,
 }
 
 pub struct Calc {}
@@ -29,9 +29,7 @@ impl Calc {
         for c in chars {
             match c {
                 '0'..='9' => match tokens.last_mut() {
-                    Some(Token::Number(n)) => {
-                        *n = *n * 10 + (c as u32 - 48)
-                    },
+                    Some(Token::Number(n)) => *n = *n * 10 + (c as u32 - 48),
                     _ => {
                         let digit = c as u32 - 48;
                         tokens.push(Token::Number(digit));
@@ -41,11 +39,11 @@ impl Calc {
                 '-' => tokens.push(Token::Op(Operator::Sub)),
                 '*' => tokens.push(Token::Op(Operator::Mul)),
                 '/' => tokens.push(Token::Op(Operator::Div)),
-                '(' => { 
+                '(' => {
                     tokens.push(Token::Bracket('('));
-                    parens.push(c);    
-                },
-                ')' => { 
+                    parens.push(c);
+                }
+                ')' => {
                     tokens.push(Token::Bracket(')'));
                     if let Some(p) = parens.pop() {
                         if p != '(' {
@@ -54,16 +52,15 @@ impl Calc {
                     } else {
                         return Err(Error::MismatchedParens);
                     }
-                },
-                ' ' => {},
-                '\n' => {},
+                }
+                ' ' => {}
+                '\n' => {}
                 _ => return Err(Error::BadToken(c)),
-                
             }
         }
 
         if parens.len() > 0 {
-            return  Err(Error::MismatchedParens);
+            return Err(Error::MismatchedParens);
         }
 
         Ok(tokens)
@@ -78,29 +75,31 @@ impl Calc {
             match token {
                 Token::Number(_) => queue.push(token),
                 Token::Op(_) => {
-                    while !stack.is_empty() && stack[stack.len()-1] >= token && matches!(stack[stack.len() - 1], Token::Op(_)) {
+                    while !stack.is_empty()
+                        && stack[stack.len() - 1] >= token
+                        && matches!(stack[stack.len() - 1], Token::Op(_))
+                    {
                         queue.push(stack.pop().unwrap());
                     }
                     stack.push(token);
-                },
+                }
                 Token::Bracket('(') => stack.push(token),
                 Token::Bracket(')') => {
-                    while !stack.is_empty() && stack[stack.len()-1] != Token::Bracket('(') {
+                    while !stack.is_empty() && stack[stack.len() - 1] != Token::Bracket('(') {
                         queue.push(stack.pop().unwrap());
                     }
                     stack.pop();
-                },
-                _ => {}   
+                }
+                _ => {}
             }
         }
 
         while stack.len() > 0 {
             queue.push(stack.pop().unwrap());
         }
-        
+
         queue
     }
-
 
     pub fn avaluate(mut tokens: Vec<Token>) -> Option<f32> {
         tokens.reverse();
@@ -113,22 +112,22 @@ impl Calc {
                     let right = stack.pop().unwrap();
                     let left = stack.pop().unwrap();
                     stack.push(left + right);
-                },
+                }
                 Token::Op(Operator::Sub) => {
                     let right = stack.pop().unwrap();
                     let left = stack.pop().unwrap();
                     stack.push(left - right);
-                },
+                }
                 Token::Op(Operator::Mul) => {
                     let right = stack.pop().unwrap();
                     let left = stack.pop().unwrap();
                     stack.push(left * right);
-                },
+                }
                 Token::Op(Operator::Div) => {
                     let right = stack.pop().unwrap();
                     let left = stack.pop().unwrap();
                     stack.push(left / right);
-                },
+                }
                 _ => {}
             }
         }
@@ -153,7 +152,7 @@ mod tests {
         // println!("{:?}", res);
         assert_eq!(res, 10.0);
     }
-    
+
     #[test]
     fn works_sub() {
         let tokens = super::Calc::parse("10 - 5").unwrap();
@@ -164,7 +163,7 @@ mod tests {
         // println!("{:?}", res);
         assert_eq!(res, 5.0);
     }
-    
+
     #[test]
     fn works_mul() {
         let tokens = super::Calc::parse("5 * 5").unwrap();
@@ -175,7 +174,7 @@ mod tests {
         // println!("{:?}", res);
         assert_eq!(res, 25.0);
     }
-    
+
     #[test]
     fn works_div() {
         let tokens = super::Calc::parse("10 / 5").unwrap();
@@ -186,7 +185,7 @@ mod tests {
         // println!("{:?}", res);
         assert_eq!(res, 2.0);
     }
-    
+
     #[test]
     fn works_all() {
         let tokens = super::Calc::parse("(5 + 5) * (10 - 5) / 10").unwrap();

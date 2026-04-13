@@ -1,19 +1,34 @@
+use std::io::{self, Write};
+
 use calculator::{Calc, Error};
 
 fn main() -> Result<(), Error> {
+    println!("calculator");
 
     loop {
+        print!(">> ");
+        io::stdout().flush().unwrap();
+
         let mut input = String::new();
-        match std::io::stdin().read_line(&mut input) {
-            Ok(_) => {
-                let tokens = Calc::parse(input)?;
+        io::stdin().read_line(&mut input).unwrap();
+
+        let input = input.trim();
+
+        if input == "exit" {
+            break;
+        }
+
+        match Calc::parse(input) {
+            Ok(tokens) => {
                 let expr = Calc::expression(tokens);
-                let res = Calc::avaluate(expr).unwrap();
-                println!("{}", res);
-            },
-            Err(e) => {
-                println!("error: {}", e);
+                match Calc::avaluate(expr) {
+                    Some(res) => println!("{}", res),
+                    None => println!("Error: evaluation failed"),
+                }
             }
+            Err(e) => println!("Error: {:?}", e),
         }
     }
+
+    Ok(())
 }
