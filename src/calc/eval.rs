@@ -37,7 +37,7 @@ pub fn eval_postfix(mut tokens: Vec<Token>) -> Result<f32, CalcError> {
         return Err(CalcError::NotEnoughOperands);
     }
 
-    Ok(stack.pop().unwrap())
+    Ok(stack.pop().unwrap()) //#TODO refactor and remove unwrap
 }
 
 #[cfg(test)]

@@ -1,5 +1,5 @@
 use super::error::CalcError;
-use super::token::{Operator, Token};
+use super::token::*;
 
 pub fn tokenize(expr: &str) -> Result<Vec<Token>, CalcError> {
     let mut tokens = Vec::new();
@@ -18,11 +18,11 @@ pub fn tokenize(expr: &str) -> Result<Vec<Token>, CalcError> {
             '*' => tokens.push(Token::Op(Operator::Mul)),
             '/' => tokens.push(Token::Op(Operator::Div)),
             '(' => {
-                tokens.push(Token::Bracket('('));
+                tokens.push(Token::Bracket(Bracket::Open));
                 parens.push(c);
             }
             ')' => {
-                tokens.push(Token::Bracket(')'));
+                tokens.push(Token::Bracket(Bracket::Close));
                 if parens.pop().is_none() {
                     return Err(CalcError::MismatchedParens);
                 }
@@ -90,11 +90,11 @@ mod tests {
         assert_eq!(
             tokens,
             vec![
-                Token::Bracket('('),
+                Token::Bracket(Bracket::Open),
                 Token::Number(1),
                 Token::Op(Operator::Add),
                 Token::Number(2),
-                Token::Bracket(')'),
+                Token::Bracket(Bracket::Close),
             ]
         );
     }

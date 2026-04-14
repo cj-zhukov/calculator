@@ -22,11 +22,13 @@ pub fn run() -> Result<(), AppError> {
 
         let mut input = String::new();
         if io::stdin().read_line(&mut input)? == 0 {
+            println!("no input provided");
             break;
         }
 
         let input = input.trim();
 
+        // exit calculator
         if input == "exit" {
             break;
         }
@@ -36,7 +38,7 @@ pub fn run() -> Result<(), AppError> {
         }
 
         match evaluate(input) {
-            Ok(res) => println!("= {}", res),
+            Ok(res) => println!("{}", res),
             Err(e) => eprintln!("Error: {}", e),
         }
     }

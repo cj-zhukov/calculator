@@ -10,5 +10,11 @@ pub enum Operator {
 pub enum Token {
     Number(u32),
     Op(Operator),
-    Bracket(char),
+    Bracket(Bracket),
+}
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Bracket {
+    Open,
+    Close,
 }
