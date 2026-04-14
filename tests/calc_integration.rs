@@ -9,6 +9,7 @@ fn test_multiple_cases() {
         ("1 + 2 * 3", 7.0),
         ("(2 + 3) * 4", 20.0),
         ("(5 + 5) * (10 - 5) / 10", 5.0),
+        ("(5.0 + 5.0) * (10.0 - 5.0) / 10.0", 5.0),
     ];
 
     for (input, expected) in cases {
@@ -21,6 +22,9 @@ fn test_multiple_cases() {
 fn test_bad_token() {
     let err = evaluate("1 + a").unwrap_err();
     assert!(matches!(err, CalcError::BadToken('a')));
+
+    let err = evaluate("1,1 + 2,1").unwrap_err();
+    assert!(matches!(err, CalcError::BadToken(',')));
 }
 
 #[test]
