@@ -1,4 +1,4 @@
-use super::token::Token;
+use super::token::*;
 
 pub fn to_postfix(mut tokens: Vec<Token>) -> Vec<Token> {
     tokens.reverse();
@@ -21,19 +21,17 @@ pub fn to_postfix(mut tokens: Vec<Token>) -> Vec<Token> {
                 stack.push(token);
             }
 
-            Token::Bracket('(') => stack.push(token),
+            Token::Bracket(Bracket::Open) => stack.push(token),
 
-            Token::Bracket(')') => {
+            Token::Bracket(Bracket::Close) => {
                 while let Some(top) = stack.last() {
-                    if *top == Token::Bracket('(') {
+                    if *top == Token::Bracket(Bracket::Open) {
                         break;
                     }
                     output.push(stack.pop().unwrap());
                 }
                 stack.pop(); // remove '('
             }
-
-            _ => {}
         }
     }
 
@@ -58,11 +56,11 @@ mod tests {
     }
 
     fn lpar() -> Token {
-        Token::Bracket('(')
+        Token::Bracket(Bracket::Open)
     }
 
     fn rpar() -> Token {
-        Token::Bracket(')')
+        Token::Bracket(Bracket::Close)
     }
 
     #[test]
