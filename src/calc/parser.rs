@@ -47,7 +47,7 @@ mod tests {
     use super::*;
     use crate::calc::token::{Operator, Token};
 
-    fn n(x: u32) -> Token {
+    fn n(x: f32) -> Token {
         Token::Number(x)
     }
 
@@ -65,21 +65,21 @@ mod tests {
 
     #[test]
     fn postfix_simple_add() {
-        let input = vec![n(1), op(Operator::Add), n(2)];
+        let input = vec![n(1.), op(Operator::Add), n(2.)];
         let res = to_postfix(input);
-        assert_eq!(res, vec![n(1), n(2), op(Operator::Add)]);
+        assert_eq!(res, vec![n(1.), n(2.), op(Operator::Add)]);
     }
 
     #[test]
     fn postfix_precedence() {
         // 1 + 2 * 3
-        let input = vec![n(1), op(Operator::Add), n(2), op(Operator::Mul), n(3)];
+        let input = vec![n(1.), op(Operator::Add), n(2.), op(Operator::Mul), n(3.)];
         let res = to_postfix(input);
 
         // expected: 1 2 3 * +
         assert_eq!(
             res,
-            vec![n(1), n(2), n(3), op(Operator::Mul), op(Operator::Add),]
+            vec![n(1.), n(2.), n(3.), op(Operator::Mul), op(Operator::Add),]
         );
     }
 
@@ -88,32 +88,32 @@ mod tests {
         // (1 + 2) * 3
         let input = vec![
             lpar(),
-            n(1),
+            n(1.),
             op(Operator::Add),
-            n(2),
+            n(2.),
             rpar(),
             op(Operator::Mul),
-            n(3),
+            n(3.),
         ];
         let res = to_postfix(input);
 
         // expected: 1 2 + 3 *
         assert_eq!(
             res,
-            vec![n(1), n(2), op(Operator::Add), n(3), op(Operator::Mul),]
+            vec![n(1.), n(2.), op(Operator::Add), n(3.), op(Operator::Mul),]
         );
     }
 
     #[test]
     fn postfix_left_associative() {
         // 10 - 5 - 2  => (10 - 5) - 2
-        let input = vec![n(10), op(Operator::Sub), n(5), op(Operator::Sub), n(2)];
+        let input = vec![n(10.), op(Operator::Sub), n(5.), op(Operator::Sub), n(2.)];
         let res = to_postfix(input);
 
         // expected: 10 5 - 2 -
         assert_eq!(
             res,
-            vec![n(10), n(5), op(Operator::Sub), n(2), op(Operator::Sub),]
+            vec![n(10.), n(5.), op(Operator::Sub), n(2.), op(Operator::Sub),]
         );
     }
 
@@ -122,12 +122,12 @@ mod tests {
         // (1 + (2 * 3))
         let input = vec![
             lpar(),
-            n(1),
+            n(1.),
             op(Operator::Add),
             lpar(),
-            n(2),
+            n(2.),
             op(Operator::Mul),
-            n(3),
+            n(3.),
             rpar(),
             rpar(),
         ];
@@ -136,15 +136,15 @@ mod tests {
         // expected: 1 2 3 * +
         assert_eq!(
             res,
-            vec![n(1), n(2), n(3), op(Operator::Mul), op(Operator::Add),]
+            vec![n(1.), n(2.), n(3.), op(Operator::Mul), op(Operator::Add),]
         );
     }
 
     #[test]
     fn postfix_single_number() {
-        let input = vec![n(42)];
+        let input = vec![n(42.)];
         let res = to_postfix(input);
-        assert_eq!(res, vec![n(42)]);
+        assert_eq!(res, vec![n(42.)]);
     }
 
     #[test]

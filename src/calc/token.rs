@@ -6,9 +6,9 @@ pub enum Operator {
     Div,
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, PartialOrd)]
 pub enum Token {
-    Number(u32),
+    Number(f32),
     Op(Operator),
     Bracket(Bracket),
 }
