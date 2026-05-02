@@ -2,7 +2,7 @@ use std::io::{self, Write};
 
 use thiserror::Error;
 
-use crate::calc::{error::CalcError, evaluate};
+use crate::calc::{calculate, error::CalcError};
 
 #[derive(Debug, Error)]
 pub enum AppError {
@@ -37,7 +37,7 @@ pub fn run() -> Result<(), AppError> {
             continue;
         }
 
-        match evaluate(input) {
+        match calculate(input) {
             Ok(res) => println!("{}", res),
             Err(e) => eprintln!("Error: {}", e),
         }

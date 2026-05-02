@@ -1,3 +1,42 @@
+//! # Parser (Infix → Postfix)
+//!
+//! This module converts tokens from infix notation into postfix notation
+//! (Reverse Polish Notation, RPN).
+//!
+//! It performs the second stage of the calculation pipeline:
+//!
+//! ```text
+//! &str → Vec<Token> → Vec<Token> → f32
+//!  |        |             |        |
+//! str     tokens       postfix   result
+//!  ↑        ↑             ↑
+//! lexer   parser      evaluator
+//! ```
+//!
+//! ## What this step does
+//!
+//! - Applies operator precedence (e.g. `*` before `+`)
+//! - Resolves parentheses
+//! - Converts the expression into a format that is easy to evaluate
+//!
+//! Example:
+//!
+//! ```text
+//! Infix:   1 + 2 * 3
+//! Postfix: 1 2 3 * +
+//! ```
+//!
+//! ## Why postfix?
+//!
+//! Postfix notation eliminates the need for precedence rules during evaluation.
+//! The resulting expression can be executed using a simple stack-based algorithm.
+//!
+//! ## Notes
+//!
+//! - Implements a variation of the Shunting Yard algorithm
+//! - Assumes input tokens are valid and parentheses are balanced
+//! - Output is consumed by the evaluator stage
+
 use super::token::*;
 
 pub fn to_postfix(mut tokens: Vec<Token>) -> Vec<Token> {

@@ -1,3 +1,41 @@
+//! # Lexer
+//!
+//! This module is responsible for converting a raw input string into a sequence
+//! of tokens (`Vec<Token>`).
+//!
+//! It performs the first stage of the calculation pipeline:
+//!
+//! ```text
+//! &str → Vec<Token> → Vec<Token> → f32
+//!  |        |             |        |
+//! str     tokens       postfix   result
+//!  ↑        ↑             ↑
+//! lexer   parser      evaluator
+//! ```
+//!
+//! ## Responsibilities
+//!
+//! - Parse numeric literals (including floating point numbers like `12.5`)
+//! - Recognize arithmetic operators (`+`, `-`, `*`, `/`)
+//! - Handle parentheses (`(`, `)`)
+//! - Ignore whitespace
+//! - Validate balanced parentheses
+//! - Detect invalid characters
+//!
+//! ## What it does NOT do
+//!
+//! - Does not validate expression correctness (e.g. `1 2` is allowed)
+//! - Does not handle operator precedence
+//! - Does not evaluate expressions
+//!
+//! These responsibilities belong to later stages (parser and evaluator).
+//!
+//! ## Notes
+//!
+//! - Numbers are parsed using a buffer and converted to `f32`
+//! - Invalid number formats (e.g. `1..2`) will result in an error during parsing
+//! - Parentheses are tracked during tokenization to detect mismatches early
+
 use super::error::CalcError;
 use super::token::*;
 
