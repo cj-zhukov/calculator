@@ -1,3 +1,54 @@
+//! # Evaluator (Postfix → Result)
+//!
+//! This module evaluates a postfix (Reverse Polish Notation, RPN)
+//! expression and produces a final numeric result.
+//!
+//! It performs the third and final stage of the calculation pipeline:
+//!
+//! ```text
+//! &str → Vec<Token> → Vec<Token> → f32
+//!  |        |             |        |
+//! str     tokens       postfix   result
+//!  ↑        ↑             ↑
+//! lexer   parser      evaluator
+//! ```
+//!
+//! ## What this step does
+//!
+//! - Executes a postfix expression using a stack-based algorithm
+//! - Applies arithmetic operations in the correct order
+//! - Produces a single `f32` result
+//!
+//! ## How it works
+//!
+//! - Numbers are pushed onto a stack
+//! - Operators pop two operands (`left`, `right`) from the stack
+//! - The result of the operation is pushed back onto the stack
+//!
+//! Example:
+//!
+//! ```text
+//! Postfix: 1 2 3 * +
+//!
+//! Stack steps:
+//! []          → push 1 → [1]
+//! [1]         → push 2 → [1, 2]
+//! [1, 2]      → push 3 → [1, 2, 3]
+//! [1, 2, 3]   → *      → [1, 6]
+//! [1, 6]      → +      → [7]
+//! ```
+//!
+//! ## Errors
+//!
+//! - `NotEnoughOperands` → when the stack does not contain enough values
+//! - `DivisionByZero` → when attempting to divide by zero
+//!
+//! ## Notes
+//!
+//! - Assumes input is valid postfix notation (produced by the parser)
+//! - Final stack must contain exactly one value
+//! - Any leftover values indicate an invalid expression
+
 use super::error::CalcError;
 use super::token::{Operator, Token};
 

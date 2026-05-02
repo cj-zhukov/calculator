@@ -1,4 +1,4 @@
-use calculator::calc::{error::CalcError, evaluate};
+use calculator::calc::{calculate, error::CalcError};
 
 #[test]
 fn test_multiple_cases() {
@@ -13,52 +13,52 @@ fn test_multiple_cases() {
     ];
 
     for (input, expected) in cases {
-        let res = evaluate(input).unwrap();
+        let res = calculate(input).unwrap();
         assert_eq!(res, expected, "failed on input: {}", input);
     }
 }
 
 #[test]
 fn test_bad_token() {
-    let err = evaluate("1 + a").unwrap_err();
+    let err = calculate("1 + a").unwrap_err();
     assert!(matches!(err, CalcError::BadToken('a')));
 
-    let err = evaluate("1,1 + 2,1").unwrap_err();
+    let err = calculate("1,1 + 2,1").unwrap_err();
     assert!(matches!(err, CalcError::BadToken(',')));
 }
 
 #[test]
 fn test_mismatched_parens() {
-    let err = evaluate("(1 + 2").unwrap_err();
+    let err = calculate("(1 + 2").unwrap_err();
     assert!(matches!(err, CalcError::MismatchedParens));
 }
 
 #[test]
 fn test_division_by_zero() {
-    let err = evaluate("10 / 0").unwrap_err();
+    let err = calculate("10 / 0").unwrap_err();
     assert!(matches!(err, CalcError::DivisionByZero));
 }
 
 #[test]
 fn test_empty_input() {
-    let err = evaluate("").unwrap_err();
+    let err = calculate("").unwrap_err();
     assert!(matches!(err, CalcError::NotEnoughOperands));
 }
 
 #[test]
 fn test_only_number() {
-    let res = evaluate("42").unwrap();
+    let res = calculate("42").unwrap();
     assert_eq!(res, 42.0);
 }
 
 #[test]
 fn test_spaces_everywhere() {
-    let res = evaluate("   3   +   4   *  2 ").unwrap();
+    let res = calculate("   3   +   4   *  2 ").unwrap();
     assert_eq!(res, 11.0);
 }
 
 #[test]
 fn test_nested_expression() {
-    let res = evaluate("(2 + (3 * (4 + 1)))").unwrap();
+    let res = calculate("(2 + (3 * (4 + 1)))").unwrap();
     assert_eq!(res, 17.0);
 }
