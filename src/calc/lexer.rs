@@ -40,9 +40,9 @@ use super::error::CalcError;
 use super::token::*;
 
 pub fn tokenize(expr: &str) -> Result<Vec<Token>, CalcError> {
-    let mut tokens = Vec::new();
-    let mut parens = Vec::new();
-    let mut number_buf = String::new();
+    let mut tokens = Vec::with_capacity(expr.len());
+    let mut paren_depth = 0;
+    let mut number_buf = String::new(); //#TODO improve
 
     let flush_number = |buf: &mut String, tokens: &mut Vec<Token>| -> Result<(), CalcError> {
         if !buf.is_empty() {
@@ -74,15 +74,16 @@ pub fn tokenize(expr: &str) -> Result<Vec<Token>, CalcError> {
             '(' => {
                 flush_number(&mut number_buf, &mut tokens)?;
                 tokens.push(Token::Bracket(Bracket::Open));
-                parens.push(c);
+                paren_depth += 1;
             }
 
             ')' => {
-                flush_number(&mut number_buf, &mut tokens)?;
-                tokens.push(Token::Bracket(Bracket::Close));
-                if parens.pop().is_none() {
+                if paren_depth == 0 {
                     return Err(CalcError::MismatchedParens);
                 }
+                flush_number(&mut number_buf, &mut tokens)?;
+                tokens.push(Token::Bracket(Bracket::Close));
+                paren_depth -= 1;
             }
 
             ' ' | '\n' => {
@@ -96,7 +97,7 @@ pub fn tokenize(expr: &str) -> Result<Vec<Token>, CalcError> {
     // flush last number
     flush_number(&mut number_buf, &mut tokens)?;
 
-    if !parens.is_empty() {
+    if paren_depth != 0 {
         return Err(CalcError::MismatchedParens);
     }
 

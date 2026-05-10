@@ -11,6 +11,9 @@ pub enum CalcError {
     #[error("not enough operands")]
     NotEnoughOperands,
 
+    #[error("invalid expression")]
+    InvalidExpression,
+
     #[error("division by zero")]
     DivisionByZero,
 }

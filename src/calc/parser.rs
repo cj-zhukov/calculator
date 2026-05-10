@@ -42,8 +42,8 @@ use super::token::*;
 pub fn to_postfix(mut tokens: Vec<Token>) -> Vec<Token> {
     tokens.reverse();
 
-    let mut output = Vec::new();
-    let mut stack = Vec::new();
+    let mut output = Vec::with_capacity(tokens.len());
+    let mut stack = Vec::with_capacity(tokens.len());
 
     while let Some(token) = tokens.pop() {
         match token {
