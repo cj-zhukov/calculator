@@ -52,14 +52,12 @@
 use super::error::CalcError;
 use super::token::{Operator, Token};
 
-pub fn eval_postfix(mut tokens: Vec<Token>) -> Result<f32, CalcError> {
-    tokens.reverse();
+pub fn eval_postfix(tokens: Vec<Token>) -> Result<f32, CalcError> {
+    let mut stack: Vec<f32> = Vec::with_capacity(tokens.len());
 
-    let mut stack: Vec<f32> = Vec::new();
-
-    while let Some(token) = tokens.pop() {
+    for token in tokens {
         match token {
-            Token::Number(n) => stack.push(n as f32),
+            Token::Number(n) => stack.push(n),
 
             Token::Op(op) => {
                 let right = stack.pop().ok_or(CalcError::NotEnoughOperands)?;
@@ -85,10 +83,10 @@ pub fn eval_postfix(mut tokens: Vec<Token>) -> Result<f32, CalcError> {
     }
 
     if stack.len() != 1 {
-        return Err(CalcError::NotEnoughOperands);
+        return Err(CalcError::InvalidExpression);
     }
 
-    Ok(stack.pop().unwrap()) //#TODO refactor and remove unwrap
+    stack.pop().ok_or(CalcError::InvalidExpression)
 }
 
 #[cfg(test)]
@@ -160,13 +158,13 @@ mod tests {
     fn eval_extra_operands_should_fail() {
         let input = vec![n(1.), n(2.), n(3.), op(Operator::Add)];
         let err = eval_postfix(input).unwrap_err();
-        assert!(matches!(err, CalcError::NotEnoughOperands));
+        assert!(matches!(err, CalcError::InvalidExpression));
     }
 
     #[test]
     fn eval_empty() {
         let input = vec![];
         let err = eval_postfix(input).unwrap_err();
-        assert!(matches!(err, CalcError::NotEnoughOperands));
+        assert!(matches!(err, CalcError::InvalidExpression));
     }
 }

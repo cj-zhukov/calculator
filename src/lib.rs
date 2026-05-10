@@ -11,7 +11,7 @@
 //! Public API:
 //!
 //! ```rust
-//! pub fn calculate(expr: &str) -> Result<f32, CalcError>
+//! // pub fn calculate(expr: &str) -> Result<f32, CalcError>
 //! ```
 
 pub mod calc;

@@ -34,6 +34,12 @@ fn test_mismatched_parens() {
 }
 
 #[test]
+fn test_not_enough_operands() {
+    let err = calculate("1 + ").unwrap_err();
+    assert!(matches!(err, CalcError::NotEnoughOperands));
+}
+
+#[test]
 fn test_division_by_zero() {
     let err = calculate("10 / 0").unwrap_err();
     assert!(matches!(err, CalcError::DivisionByZero));
@@ -42,7 +48,7 @@ fn test_division_by_zero() {
 #[test]
 fn test_empty_input() {
     let err = calculate("").unwrap_err();
-    assert!(matches!(err, CalcError::NotEnoughOperands));
+    assert!(matches!(err, CalcError::InvalidExpression));
 }
 
 #[test]
