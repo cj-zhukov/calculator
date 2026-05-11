@@ -1,7 +1,7 @@
 //! # Lexer
 //!
-//! This module is responsible for converting a raw input string into a sequence
-//! of tokens (`Vec<Token>`).
+//! This module converts a raw expression string into a sequence of tokens
+//! (`Vec<Token>`).
 //!
 //! It performs the first stage of the calculation pipeline:
 //!
@@ -15,26 +15,86 @@
 //!
 //! ## Responsibilities
 //!
-//! - Parse numeric literals (including floating point numbers like `12.5`)
+//! - Parse numeric literals (`1`, `42`, `3.14`)
 //! - Recognize arithmetic operators (`+`, `-`, `*`, `/`)
-//! - Handle parentheses (`(`, `)`)
+//! - Recognize parentheses (`(`, `)`)
 //! - Ignore whitespace
 //! - Validate balanced parentheses
-//! - Detect invalid characters
+//! - Detect invalid characters and malformed numbers
 //!
 //! ## What it does NOT do
 //!
-//! - Does not validate expression correctness (e.g. `1 2` is allowed)
+//! - Does not validate full expression correctness
+//!   (`1 2` is tokenized successfully)
 //! - Does not handle operator precedence
 //! - Does not evaluate expressions
 //!
-//! These responsibilities belong to later stages (parser and evaluator).
+//! These responsibilities belong to later stages
+//! (parser and evaluator).
+//!
+//! ## Number Parsing
+//!
+//! Numbers are built incrementally while scanning characters.
+//!
+//! Integer digits shift existing digits left:
+//!
+//! ```text
+//! 12
+//!
+//! 0 * 10 + 1 = 1
+//! 1 * 10 + 2 = 12
+//! ```
+//!
+//! Fractional digits are added using decreasing multipliers:
+//!
+//! ```text
+//! 3.14
+//!
+//! integer part:
+//! 0 * 10 + 3 = 3
+//!
+//! fractional part:
+//! 3 + 1 * 0.1  = 3.1
+//! 3.1 + 4 * 0.01 = 3.14
+//! ```
+//!
+//! This avoids temporary `String` allocations and parsing via
+//! `str::parse::<f32>()`.
+//!
+//! ## Example
+//!
+//! Input:
+//!
+//! ```text
+//! (12.5 + 3) * 2
+//! ```
+//!
+//! Output:
+//!
+//! ```text
+//! [
+//!     Bracket(Open),
+//!     Number(12.5),
+//!     Op(Add),
+//!     Number(3.0),
+//!     Bracket(Close),
+//!     Op(Mul),
+//!     Number(2.0),
+//! ]
+//! ```
+//!
+//! ## Errors
+//!
+//! The lexer may return:
+//!
+//! - `BadToken(char)`
+//! - `MismatchedParens`
 //!
 //! ## Notes
 //!
-//! - Numbers are parsed using a buffer and converted to `f32`
-//! - Invalid number formats (e.g. `1..2`) will result in an error during parsing
-//! - Parentheses are tracked during tokenization to detect mismatches early
+//! - Parentheses are validated during tokenization
+//! - Multiple decimal points in a number (`1..2`) are rejected
+//! - Lexer output is consumed by the parser stage
 
 use super::error::CalcError;
 use super::token::*;
@@ -42,25 +102,63 @@ use super::token::*;
 pub fn tokenize(expr: &str) -> Result<Vec<Token>, CalcError> {
     let mut tokens = Vec::with_capacity(expr.len());
     let mut paren_depth = 0;
-    let mut number_buf = String::new(); //#TODO improve
+    // Current number being built incrementally.
+    let mut number = 0.0;
+    // Tracks whether we are currently parsing a number.
+    let mut building_number = false;
+    // True after encountering '.' in a number.
+    let mut in_fraction = false;
+    // Decimal place multiplier: 0.1 → 0.01 → 0.001 ...
+    let mut fraction_multiplier = 0.1;
 
-    let flush_number = |buf: &mut String, tokens: &mut Vec<Token>| -> Result<(), CalcError> {
-        if !buf.is_empty() {
-            let n: f32 = buf.parse().map_err(|_| CalcError::BadToken('?'))?;
-            tokens.push(Token::Number(n));
-            buf.clear();
+    // Push completed number into tokens and reset parser state.
+    let flush_number = |number: &mut f32,
+                        building_number: &mut bool,
+                        in_fraction: &mut bool,
+                        fraction_multiplier: &mut f32,
+                        tokens: &mut Vec<Token>| {
+        if *building_number {
+            tokens.push(Token::Number(*number));
+
+            *number = 0.0;
+            *building_number = false;
+            *in_fraction = false;
+            *fraction_multiplier = 0.1;
         }
-        Ok(())
     };
 
     for c in expr.chars() {
         match c {
-            '0'..='9' | '.' => {
-                number_buf.push(c);
+            '0'..='9' => {
+                let digit = (c as u8 - b'0') as f32;
+                // Build decimal part: 0.1, 0.01, 0.001 ...
+                if in_fraction {
+                    number += digit * fraction_multiplier;
+                    fraction_multiplier *= 0.1;
+                } else {
+                    // Shift existing digits left and append new digit.
+                    number = number * 10.0 + digit;
+                }
+                building_number = true;
+            }
+
+            '.' => {
+                // Reject multiple dots in the same number.
+                if in_fraction {
+                    return Err(CalcError::BadToken('.'));
+                }
+                in_fraction = true;
+                building_number = true;
             }
 
             '+' | '-' | '*' | '/' => {
-                flush_number(&mut number_buf, &mut tokens)?;
+                flush_number(
+                    &mut number,
+                    &mut building_number,
+                    &mut in_fraction,
+                    &mut fraction_multiplier,
+                    &mut tokens,
+                );
                 let op = match c {
                     '+' => Operator::Add,
                     '-' => Operator::Sub,
@@ -72,7 +170,13 @@ pub fn tokenize(expr: &str) -> Result<Vec<Token>, CalcError> {
             }
 
             '(' => {
-                flush_number(&mut number_buf, &mut tokens)?;
+                flush_number(
+                    &mut number,
+                    &mut building_number,
+                    &mut in_fraction,
+                    &mut fraction_multiplier,
+                    &mut tokens,
+                );
                 tokens.push(Token::Bracket(Bracket::Open));
                 paren_depth += 1;
             }
@@ -81,21 +185,39 @@ pub fn tokenize(expr: &str) -> Result<Vec<Token>, CalcError> {
                 if paren_depth == 0 {
                     return Err(CalcError::MismatchedParens);
                 }
-                flush_number(&mut number_buf, &mut tokens)?;
+                flush_number(
+                    &mut number,
+                    &mut building_number,
+                    &mut in_fraction,
+                    &mut fraction_multiplier,
+                    &mut tokens,
+                );
                 tokens.push(Token::Bracket(Bracket::Close));
                 paren_depth -= 1;
             }
 
             ' ' | '\n' => {
-                flush_number(&mut number_buf, &mut tokens)?;
+                flush_number(
+                    &mut number,
+                    &mut building_number,
+                    &mut in_fraction,
+                    &mut fraction_multiplier,
+                    &mut tokens,
+                );
             }
 
             _ => return Err(CalcError::BadToken(c)),
         }
     }
 
-    // flush last number
-    flush_number(&mut number_buf, &mut tokens)?;
+    // Push final number if expression ends with a digit.
+    flush_number(
+        &mut number,
+        &mut building_number,
+        &mut in_fraction,
+        &mut fraction_multiplier,
+        &mut tokens,
+    );
 
     if paren_depth != 0 {
         return Err(CalcError::MismatchedParens);
