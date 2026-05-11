@@ -4,6 +4,7 @@ use calculator::calc::{calculate, error::CalcError};
 fn test_multiple_cases() {
     let cases = vec![
         ("1 + 1", 2.0),
+        ("1+1", 2.0),
         ("2 * 3", 6.0),
         ("10 / 2", 5.0),
         ("1 + 2 * 3", 7.0),
