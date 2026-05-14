@@ -1,7 +1,7 @@
 use calculator::calc::{calculate, error::CalcError};
 
 #[test]
-fn test_multiple_cases() {
+fn test_multiple_cases() -> Result<(), CalcError> {
     let cases = vec![
         ("1 + 1", 2.0),
         ("1+1", 2.0),
@@ -12,11 +12,11 @@ fn test_multiple_cases() {
         ("(5 + 5) * (10 - 5) / 10", 5.0),
         ("(5.0 + 5.0) * (10.0 - 5.0) / 10.0", 5.0),
     ];
-
     for (input, expected) in cases {
-        let res = calculate(input).unwrap();
+        let res = calculate(input)?;
         assert_eq!(res, expected, "failed on input: {}", input);
     }
+    Ok(())
 }
 
 #[test]
@@ -53,19 +53,22 @@ fn test_empty_input() {
 }
 
 #[test]
-fn test_only_number() {
-    let res = calculate("42").unwrap();
+fn test_only_number() -> Result<(), CalcError> {
+    let res = calculate("42")?;
     assert_eq!(res, 42.0);
+    Ok(())
 }
 
 #[test]
-fn test_spaces_everywhere() {
-    let res = calculate("   3   +   4   *  2 ").unwrap();
+fn test_spaces_everywhere() -> Result<(), CalcError> {
+    let res = calculate("   3   +   4   *  2 ")?;
     assert_eq!(res, 11.0);
+    Ok(())
 }
 
 #[test]
-fn test_nested_expression() {
-    let res = calculate("(2 + (3 * (4 + 1)))").unwrap();
+fn test_nested_expression() -> Result<(), CalcError> {
+    let res = calculate("(2 + (3 * (4 + 1)))")?;
     assert_eq!(res, 17.0);
+    Ok(())
 }

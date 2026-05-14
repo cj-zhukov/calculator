@@ -17,8 +17,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_eval() {
-        let res = calculate("(5 + 5) * 2 / 2").unwrap();
+    fn test_eval() -> Result<(), CalcError> {
+        let res = calculate("(5 + 5) * 2 / 2")?;
         assert_eq!(res, 10.0);
+        Ok(())
     }
 }

@@ -231,8 +231,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn tokenize_simple_expression() {
-        let tokens = tokenize("1 + 2").unwrap();
+    fn tokenize_simple_expression() -> Result<(), CalcError> {
+        let tokens = tokenize("1 + 2")?;
         assert_eq!(
             tokens,
             vec![
@@ -241,11 +241,12 @@ mod tests {
                 Token::Number(2.),
             ]
         );
+        Ok(())
     }
 
     #[test]
-    fn tokenize_multi_digit_number() {
-        let tokens = tokenize("123 + 45").unwrap();
+    fn tokenize_multi_digit_number() -> Result<(), CalcError> {
+        let tokens = tokenize("123 + 45")?;
         assert_eq!(
             tokens,
             vec![
@@ -254,11 +255,12 @@ mod tests {
                 Token::Number(45.),
             ]
         );
+        Ok(())
     }
 
     #[test]
-    fn tokenize_all_operators() {
-        let tokens = tokenize("1 + 2 - 3 * 4 / 5").unwrap();
+    fn tokenize_all_operators() -> Result<(), CalcError> {
+        let tokens = tokenize("1 + 2 - 3 * 4 / 5")?;
         assert_eq!(
             tokens,
             vec![
@@ -273,11 +275,12 @@ mod tests {
                 Token::Number(5.),
             ]
         );
+        Ok(())
     }
 
     #[test]
-    fn tokenize_parentheses() {
-        let tokens = tokenize("(1 + 2)").unwrap();
+    fn tokenize_parentheses() -> Result<(), CalcError> {
+        let tokens = tokenize("(1 + 2)")?;
         assert_eq!(
             tokens,
             vec![
@@ -288,6 +291,7 @@ mod tests {
                 Token::Bracket(Bracket::Close),
             ]
         );
+        Ok(())
     }
 
     #[test]
@@ -309,8 +313,8 @@ mod tests {
     }
 
     #[test]
-    fn tokenize_ignores_whitespace() {
-        let tokens = tokenize("  1   +   2 \n").unwrap();
+    fn tokenize_ignores_whitespace() -> Result<(), CalcError> {
+        let tokens = tokenize("  1   +   2 \n")?;
         assert_eq!(
             tokens,
             vec![
@@ -319,17 +323,20 @@ mod tests {
                 Token::Number(2.),
             ]
         );
+        Ok(())
     }
 
     #[test]
-    fn tokenize_empty_input() {
-        let tokens = tokenize("").unwrap();
+    fn tokenize_empty_input() -> Result<(), CalcError> {
+        let tokens = tokenize("")?;
         assert!(tokens.is_empty());
+        Ok(())
     }
 
     #[test]
-    fn tokenize_numbers_separated_by_space() {
-        let tokens = tokenize("1 2").unwrap();
+    fn tokenize_numbers_separated_by_space() -> Result<(), CalcError> {
+        let tokens = tokenize("1 2")?;
         assert_eq!(tokens, vec![Token::Number(1.0), Token::Number(2.0),]);
+        Ok(())
     }
 }
