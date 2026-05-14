@@ -103,33 +103,37 @@ mod tests {
     }
 
     #[test]
-    fn eval_add() {
+    fn eval_add() -> Result<(), CalcError> {
         let input = vec![n(1.), n(2.), op(Operator::Add)];
-        let res = eval_postfix(input).unwrap();
+        let res = eval_postfix(input)?;
         assert_eq!(res, 3.0);
+        Ok(())
     }
 
     #[test]
-    fn eval_all_ops() {
+    fn eval_all_ops() -> Result<(), CalcError> {
         // (5 + 5) * 2 = 20 → postfix: 5 5 + 2 *
         let input = vec![n(5.), n(5.), op(Operator::Add), n(2.), op(Operator::Mul)];
-        let res = eval_postfix(input).unwrap();
+        let res = eval_postfix(input)?;
         assert_eq!(res, 20.0);
+        Ok(())
     }
 
     #[test]
-    fn eval_sub_order() {
+    fn eval_sub_order() -> Result<(), CalcError> {
         // 10 - 5 = 5 → postfix: 10 5 -
         let input = vec![n(10.), n(5.), op(Operator::Sub)];
-        let res = eval_postfix(input).unwrap();
+        let res = eval_postfix(input)?;
         assert_eq!(res, 5.0);
+        Ok(())
     }
 
     #[test]
-    fn eval_div() {
+    fn eval_div() -> Result<(), CalcError> {
         let input = vec![n(10.), n(5.), op(Operator::Div)];
-        let res = eval_postfix(input).unwrap();
+        let res = eval_postfix(input)?;
         assert_eq!(res, 2.0);
+        Ok(())
     }
 
     #[test]
